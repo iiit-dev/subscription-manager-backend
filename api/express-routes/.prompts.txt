@@ -1,0 +1,50 @@
+// Register --> http://localhost:8000/api/auth/register
+router.post('/register', async (req, res, next) => {
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(req.body.contactPerson.password, salt);
+    if (!req.body.contactPerson.email) { return createError(400, "Email is required") }
+    try {
+        const newUser = new User({
+            companyName: req.body.companyName,
+            address: {
+                street: req.body.address.street,
+                city: req.body.address.city,
+                state: req.body.address.state,
+                country: req.body.address.country,
+                postalCode: req.body.address.postalCode,
+            },
+            contactPerson: {
+                name: req.body.contactPerson.name,
+                email: req.body.contactPerson.email,
+                phone: req.body.contactPerson.phone,
+                password: hash,
+            },
+        });
+        const userDetails = await newUser.save();
+        const userProfile = new UserProfile({
+            user: userDetails._id,
+            subscriptionPlan: []
+        });
+        await userProfile.save();
+        res.status(200).json({ userDetails, userProfile });
+    } catch (err) {
+        next(err)
+    }
+});
+the subscriptionPlan schema is mentioned below
+import mongoose from 'mongoose';
+const planSchema = new mongoose.Schema({
+    planName: { type: String, required: true, },
+    planCode: { type: String, required: true },
+    planDescription: { type: String },
+    trialLength: { type: String, enum: ['No Trial', '7 days', '14 days', '21 days', '28 days'], required: true, },
+    pricingModel: { type: String, enum: ['Fixed', 'Ramp'], required: true, },
+    pricePerBillingPeriod: { type: String, required: true, },
+    profile: { type: mongoose.Schema.Types.ObjectId, ref: 'UserProfile' },
+    createdAt: { type: Date, default: Date.now, },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+});
+
+const SubPlan = mongoose.model('SubPlan', planSchema);
+export default SubPlan
+add a user field in the subscriptionPlan field within the UserProfile document

@@ -1,0 +1,9 @@
+{
+    "email": "ubindero@berkeley.edu",
+    "password": "eK7$?.ZQf?BcZ"
+}
+id - 66c47374ff0200789a310072
+profile id - 66c47374ff0200789a310074
+
+ubindero@berkeley.edu
+eK7$?.ZQf?BcZ
